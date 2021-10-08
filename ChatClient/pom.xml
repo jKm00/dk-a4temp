@@ -9,10 +9,10 @@
     <version>1.0</version>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>15</maven.compiler.source>
+        <maven.compiler.target>15</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <javafx.version>17-ea+11</javafx.version>
+        <javafx.version>15</javafx.version>
         <module.name>${groupId}.${artifactId}</module.name>
         <main.class>App</main.class>
         <fullMainClass>${module.name}.${main.class}</fullMainClass>
