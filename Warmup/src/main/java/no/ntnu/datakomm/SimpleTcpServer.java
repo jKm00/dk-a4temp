@@ -13,7 +13,7 @@ import java.util.Locale;
  */
 public class SimpleTcpServer {
 
-    private static final int PORT = 80;
+    private static final int PORT = 1301;
 
     //private ServerSocket welcomeSocket;
 
