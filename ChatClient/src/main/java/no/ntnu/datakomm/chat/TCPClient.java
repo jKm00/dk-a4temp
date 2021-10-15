@@ -2,13 +2,20 @@ package no.ntnu.datakomm.chat;
 
 import java.io.*;
 import java.net.*;
+import java.util.IllformedLocaleException;
 import java.util.LinkedList;
 import java.util.List;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
+// ppop
 public class TCPClient {
     private PrintWriter toServer;
     private BufferedReader fromServer;
     private Socket connection;
+    private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+    private final static String loginok = "loginok";
+    private final static String userAlreadyInUse = "loginerr username already in use";
 
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
@@ -26,7 +33,18 @@ public class TCPClient {
         // TODO Step 1: implement this method
         // Hint: Remember to process all exceptions and return false on error
         // Hint: Remember to set up all the necessary input/output stream variables
-        return false;
+
+        boolean connected = false;
+        try {
+            this.connection = new Socket(host, port);
+            this.fromServer = new BufferedReader(new InputStreamReader(this.connection.getInputStream()));
+            this.toServer = new PrintWriter(this.connection.getOutputStream(), true);
+            connected = true;
+        } catch (IOException e) {
+            System.out.println("Something went wrong when establishing a socket: " + e.getMessage());;
+        }
+        return connected;
+
     }
 
     /**
@@ -39,8 +57,23 @@ public class TCPClient {
      * that no two threads call this method in parallel.
      */
     public synchronized void disconnect() {
-        // TODO Step 4: implement this method
-        // Hint: remember to check if connection is active
+        // Keyword synchronized to make sure no two threads call this method in parallel.
+        // If one thread is executing a synchronized method for an object, all other threads that invoke synchronized
+        // methods for the same object block until the first thread is done with the object.
+        try {
+            if(connection.isConnected()) // checks if the connection socket is connected (active), if so disconnect socket.
+            {
+                this.fromServer=null;
+                this.toServer=null;
+                this.connection.close();
+                this.connection=null;
+
+                logger.log(Level.INFO, "Connection closed");
+            } else {
+                throw new IllegalArgumentException("Socket is not connected"); // throws IllegalArgumentException if socket is not connected.
+            }
+        } catch (IOException e)
+        {logger.log(Level.INFO, e.getMessage());}
     }
 
     /**
@@ -59,7 +92,19 @@ public class TCPClient {
     private boolean sendCommand(String cmd) {
         // TODO Step 2: Implement this method
         // Hint: Remember to check if connection is active
-        return false;
+
+        if (connection == null) {
+            return false;
+        }
+
+        try {
+            toServer.println(cmd);
+            return true;
+        } catch (Exception e) {
+            System.out.println("Something went wrong when sending a command: " + e.getMessage());
+            return false;
+        }
+        
     }
 
     /**
@@ -72,7 +117,15 @@ public class TCPClient {
         // TODO Step 2: implement this method
         // Hint: Reuse sendCommand() method
         // Hint: update lastError if you want to store the reason for the error.
-        return false;
+
+        try {
+            sendCommand("msg" + " " + message);
+            return true;
+        } catch (Exception e) {
+            lastError = e.getMessage();
+            return false;
+        }
+
     }
 
     /**
@@ -83,6 +136,15 @@ public class TCPClient {
     public void tryLogin(String username) {
         // TODO Step 3: implement this method
         // Hint: Reuse sendCommand() method
+        
+        if (this.sendCommand("login " + username)) {
+            String response = this.waitServerResponse();
+            if (response.equals(loginok)) {
+                System.out.println("Logged in");
+            } else if (response.equals(userAlreadyInUse)) {
+                System.out.println("Username is already in use");
+            }
+        }
     }
 
     /**
@@ -91,10 +153,31 @@ public class TCPClient {
      */
     public void refreshUserList() {
         // TODO Step 5: implement this method
+
         // Hint: Use Wireshark and the provided chat client reference app to find out what commands the
         // client and server exchange for user listing.
-    }
 
+        if (this.sendCommand("users")) {
+            System.out.println("Refreshed user list");
+            try {
+                String response = fromServer.readLine();
+                if (response.equals("users")) {
+                    String userList = fromServer.readLine();
+                    
+                    for (userList.split(","); userList.length() > 0; userList.split(" ")) {
+                    System.out.println(userList);
+                    onUsersList(userList.split(","));
+                }
+            }
+            }
+             catch (IOException e) {
+                System.out.println("Error when reading from server: " + e.getMessage());
+            }
+             }
+             else {
+                System.out.println("Error when sending command");
+        }
+    }
     /**
      * Send a private message to a single recipient.
      *
@@ -106,7 +189,14 @@ public class TCPClient {
         // TODO Step 6: Implement this method
         // Hint: Reuse sendCommand() method
         // Hint: update lastError if you want to store the reason for the error.
-        return false;
+        try {
+            sendCommand("/privmsg " + recipient + " " + message);
+            return true;
+        }
+        catch (Exception e) {
+            lastError = e.getMessage();
+            return false;
+        }
     }
 
 
@@ -129,7 +219,16 @@ public class TCPClient {
         // TODO Step 4: If you get I/O Exception or null from the stream, it means that something has gone wrong
         // with the stream and hence the socket. Probably a good idea to close the socket in that case.
 
-        return null;
+        String response = null;
+        try {
+            response = fromServer.readLine();
+            System.out.println("Wait server response: " + response);
+        } catch (IOException e) {
+            System.out.println("Error when reading from server: " + e.getMessage());
+            disconnect();
+        }
+        return response;
+
     }
 
     /**
@@ -168,7 +267,8 @@ public class TCPClient {
             // and act on it.
             // Hint: In Step 3 you need to handle only login-related responses.
             // Hint: In Step 3 reuse onLoginResult() method
-
+            String response = this.waitServerResponse();
+            System.out.println("Server response: " + response);
             // TODO Step 5: update this method, handle user-list response from the server
             // Hint: In Step 5 reuse onUserList() method
 
