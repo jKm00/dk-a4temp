@@ -2,13 +2,17 @@ package no.ntnu.datakomm.chat;
 
 import java.io.*;
 import java.net.*;
+import java.util.IllformedLocaleException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TCPClient {
     private PrintWriter toServer;
     private BufferedReader fromServer;
     private Socket connection;
+    private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
@@ -39,8 +43,18 @@ public class TCPClient {
      * that no two threads call this method in parallel.
      */
     public synchronized void disconnect() {
-        // TODO Step 4: implement this method
-        // Hint: remember to check if connection is active
+        // Keyword synchronized to make sure no two threads call this method in parallel.
+        // If one thread is executing a synchronized method for an object, all other threads that invoke synchronized
+        // methods for the same object block until the first thread is done with the object.
+        try {
+            if(connection.isConnected()) // checks if the connection socket is connected (active), if so disconnect socket.
+            {
+                connection.close();
+            } else {
+                throw new IllegalArgumentException("Socket is not connected"); // throws IllegalArgumentException if socket is not connected.
+            }
+        } catch (IOException e)
+        {logger.log(Level.INFO, e.getMessage());}
     }
 
     /**
@@ -91,6 +105,9 @@ public class TCPClient {
      */
     public void refreshUserList() {
         // TODO Step 5: implement this method
+
+
+
         // Hint: Use Wireshark and the provided chat client reference app to find out what commands the
         // client and server exchange for user listing.
     }
