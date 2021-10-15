@@ -91,7 +91,15 @@ public class TCPClient {
         if (connection == null) {
             return false;
         }
-        return true;
+
+        try {
+            toServer.println(cmd);
+            return true;
+        } catch (Exception e) {
+            System.out.println("Something went wrong when sending a command: " + e.getMessage());
+            return false;
+        }
+        
     }
 
     /**
