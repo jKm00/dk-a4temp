@@ -53,6 +53,18 @@ public class TCPClient {
     public synchronized void disconnect() {
         // TODO Step 4: implement this method
         // Hint: remember to check if connection is active
+        if (this.isConnectionActive()) {
+            // Close connection
+            try {
+                this.connection.close();
+                // Reset fields
+                this.connection = null;
+                this.fromServer = null;
+                this.toServer = null;
+            } catch (IOException e) {
+                System.out.println("Error when disconnectiong: " + e.getMessage());;
+            }
+        }
     }
 
     /**
@@ -203,15 +215,11 @@ public class TCPClient {
             switch (serverResponse) {
                 case LOGIN_SUCCESS:
                     System.out.println("Login ok");
-                    for (ChatListener subscriber : this.listeners) {
-                        subscriber.onLoginResult(true, "");
-                    }
+                    this.onLoginResult(true, "");
                     break;
                 case LOGIN_ERROR:
                     System.out.println("Login error");
-                    for (ChatListener subscriber : this.listeners) {
-                        subscriber.onLoginResult(false, serverResponse);
-                    }
+                    this.onLoginResult(false, serverResponse);
                     break;
                 default:
                     System.out.println("Server response unrecognisable: " + serverResponse);
