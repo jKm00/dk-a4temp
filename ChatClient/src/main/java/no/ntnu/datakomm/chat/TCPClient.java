@@ -2,13 +2,20 @@ package no.ntnu.datakomm.chat;
 
 import java.io.*;
 import java.net.*;
+import java.util.IllformedLocaleException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TCPClient {
     private PrintWriter toServer;
     private BufferedReader fromServer;
     private Socket connection;
+    private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+    private final static String loginok = "loginok";
+    private final static String userAlreadyInUse = "loginerr username already in use";
 
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
@@ -27,15 +34,17 @@ public class TCPClient {
         // Hint: Remember to process all exceptions and return false on error
         // Hint: Remember to set up all the necessary input/output stream variables
 
+        boolean connected = false;
         try {
-            connection = new Socket(host, port);
-            toServer = new PrintWriter(connection.getOutputStream(), true);
-            fromServer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            return true;
+            this.connection = new Socket(host, port);
+            this.fromServer = new BufferedReader(new InputStreamReader(this.connection.getInputStream()));
+            this.toServer = new PrintWriter(this.connection.getOutputStream(), true);
+            connected = true;
         } catch (IOException e) {
-            lastError = e.getMessage();
-            return false;
+            System.out.println("Something went wrong when establishing a socket: " + e.getMessage());;
         }
+        return connected;
+
     }
 
     /**
@@ -48,8 +57,18 @@ public class TCPClient {
      * that no two threads call this method in parallel.
      */
     public synchronized void disconnect() {
-        // TODO Step 4: implement this method
-        // Hint: remember to check if connection is active
+        // Keyword synchronized to make sure no two threads call this method in parallel.
+        // If one thread is executing a synchronized method for an object, all other threads that invoke synchronized
+        // methods for the same object block until the first thread is done with the object.
+        try {
+            if(connection.isConnected()) // checks if the connection socket is connected (active), if so disconnect socket.
+            {
+                connection.close();
+            } else {
+                throw new IllegalArgumentException("Socket is not connected"); // throws IllegalArgumentException if socket is not connected.
+            }
+        } catch (IOException e)
+        {logger.log(Level.INFO, e.getMessage());}
     }
 
     /**
@@ -104,13 +123,20 @@ public class TCPClient {
     public void tryLogin(String username) {
         // TODO Step 3: implement this method
         // Hint: Reuse sendCommand() method
-
-        try {
-            sendCommand(username);
-        } catch (Exception e) {
-            lastError = e.getMessage();
+        
+        if (this.sendCommand("login " + username)) {
+            try {
+                String response = fromServer.readLine();
+                if (response.equals(loginok)) {
+                    System.out.println("Logged in");
+                } else if (response.equals(userAlreadyInUse)) {
+                    System.out.println("Username is already in use");
+                }
+            } catch (IOException e) {
+                System.out.println("Error when reading from server: " + e.getMessage());
+            }
         }
-    
+
     }
 
     /**
@@ -119,6 +145,9 @@ public class TCPClient {
      */
     public void refreshUserList() {
         // TODO Step 5: implement this method
+
+
+
         // Hint: Use Wireshark and the provided chat client reference app to find out what commands the
         // client and server exchange for user listing.
     }
