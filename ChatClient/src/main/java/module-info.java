@@ -1,4 +1,5 @@
 module no.ntnu.datakomm.chat {
+  requires javafx.graphics;
   requires javafx.controls;
   requires javafx.fxml;
   requires java.logging;
