@@ -48,11 +48,7 @@ public class App extends Application {
                 loaded = true;
 
                 primaryStage.setOnCloseRequest(e -> {
-                    try {
-                        stop();
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                    }
+                    Platform.exit();
                 });
             } catch (URISyntaxException | IOException e) {
                 System.out.println("Error while loading FXML: " + e.getMessage());
