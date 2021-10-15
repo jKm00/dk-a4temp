@@ -63,7 +63,12 @@ public class TCPClient {
         try {
             if(connection.isConnected()) // checks if the connection socket is connected (active), if so disconnect socket.
             {
-                connection.close();
+                this.fromServer=null;
+                this.toServer=null;
+                this.connection.close();
+                this.connection=null;
+
+                logger.log(Level.INFO, "Connection closed");
             } else {
                 throw new IllegalArgumentException("Socket is not connected"); // throws IllegalArgumentException if socket is not connected.
             }
@@ -154,7 +159,7 @@ public class TCPClient {
     public void refreshUserList() {
         // TODO Step 5: implement this method
 
-
+        
 
         // Hint: Use Wireshark and the provided chat client reference app to find out what commands the
         // client and server exchange for user listing.
