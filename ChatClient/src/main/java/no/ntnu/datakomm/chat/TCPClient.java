@@ -68,7 +68,12 @@ public class TCPClient {
     private boolean sendCommand(String cmd) {
         // TODO Step 2: Implement this method
         // Hint: Remember to check if connection is active
-        return false;
+        boolean commandSent = false;
+        if (this.isConnectionActive()) {
+            this.toServer.println(cmd);
+            commandSent = true;
+        }
+        return commandSent;
     }
 
     /**
@@ -81,6 +86,7 @@ public class TCPClient {
         // TODO Step 2: implement this method
         // Hint: Reuse sendCommand() method
         // Hint: update lastError if you want to store the reason for the error.
+        this.sendCommand("msg " + message);
         return false;
     }
 
