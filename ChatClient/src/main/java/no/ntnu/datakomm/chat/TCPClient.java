@@ -10,6 +10,9 @@ public class TCPClient {
     private BufferedReader fromServer;
     private Socket connection;
 
+    private static final String LOGIN_ERROR = "loginerr username already in use";
+    private static final String LOGIN_SUCCESS = "loginok";
+
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
 
@@ -98,6 +101,9 @@ public class TCPClient {
     public void tryLogin(String username) {
         // TODO Step 3: implement this method
         // Hint: Reuse sendCommand() method
+        if (this.isConnectionActive()) {
+            this.sendCommand("login " + username);
+        }
     }
 
     /**
@@ -144,7 +150,14 @@ public class TCPClient {
         // TODO Step 4: If you get I/O Exception or null from the stream, it means that something has gone wrong
         // with the stream and hence the socket. Probably a good idea to close the socket in that case.
 
-        return null;
+        String serverResponse = null;
+        try {
+            serverResponse = this.fromServer.readLine();
+        } catch (IOException e) {
+            // Close connection
+            System.out.println("Error when waiting for server response: " + e.getMessage());
+        }
+        return serverResponse;
     }
 
     /**
@@ -183,6 +196,23 @@ public class TCPClient {
             // and act on it.
             // Hint: In Step 3 you need to handle only login-related responses.
             // Hint: In Step 3 reuse onLoginResult() method
+            String serverResponse = this.waitServerResponse();
+            switch (serverResponse) {
+                case LOGIN_SUCCESS:
+                    System.out.println("Login ok");
+                    for (ChatListener subscriber : this.listeners) {
+                        subscriber.onLoginResult(true, "");
+                    }
+                    break;
+                case LOGIN_ERROR:
+                    System.out.println("Login error");
+                    for (ChatListener subscriber : this.listeners) {
+                        subscriber.onLoginResult(false, serverResponse);
+                    }
+                    break;
+                default:
+                    System.out.println("Server response unrecognisable: " + serverResponse);
+            }
 
             // TODO Step 5: update this method, handle user-list response from the server
             // Hint: In Step 5 reuse onUserList() method
