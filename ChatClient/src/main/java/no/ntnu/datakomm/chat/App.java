@@ -46,6 +46,14 @@ public class App extends Application {
                 primaryStage.getIcons().add(anotherIcon);
                 primaryStage.show();
                 loaded = true;
+
+                primaryStage.setOnCloseRequest(e -> {
+                    try {
+                        stop();
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
+                });
             } catch (URISyntaxException | IOException e) {
                 System.out.println("Error while loading FXML: " + e.getMessage());
             }
