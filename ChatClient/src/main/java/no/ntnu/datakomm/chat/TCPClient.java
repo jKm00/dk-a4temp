@@ -193,7 +193,14 @@ public class TCPClient {
         // TODO Step 6: Implement this method
         // Hint: Reuse sendCommand() method
         // Hint: update lastError if you want to store the reason for the error.
-        return false;
+        try {
+            sendCommand("/privmsg " + recipient + " " + message);
+            return true;
+        }
+        catch (Exception e) {
+            lastError = e.getMessage();
+            return false;
+        }
     }
 
 
