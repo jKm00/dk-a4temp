@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+// ppop
 public class TCPClient {
     private PrintWriter toServer;
     private BufferedReader fromServer;
@@ -138,18 +138,13 @@ public class TCPClient {
         // Hint: Reuse sendCommand() method
         
         if (this.sendCommand("login " + username)) {
-            try {
-                String response = fromServer.readLine();
-                if (response.equals(loginok)) {
-                    System.out.println("Logged in");
-                } else if (response.equals(userAlreadyInUse)) {
-                    System.out.println("Username is already in use");
-                }
-            } catch (IOException e) {
-                System.out.println("Error when reading from server: " + e.getMessage());
+            String response = this.waitServerResponse();
+            if (response.equals(loginok)) {
+                System.out.println("Logged in");
+            } else if (response.equals(userAlreadyInUse)) {
+                System.out.println("Username is already in use");
             }
         }
-
     }
 
     /**
@@ -171,6 +166,7 @@ public class TCPClient {
                     
                     for (userList.split(","); userList.length() > 0; userList.split(" ")) {
                     System.out.println(userList);
+                    onUsersList(userList.split(","));
                 }
             }
             }
@@ -219,6 +215,7 @@ public class TCPClient {
         String response = null;
         try {
             response = fromServer.readLine();
+            System.out.println("Wait server response: " + response);
         } catch (IOException e) {
             System.out.println("Error when reading from server: " + e.getMessage());
             disconnect();
@@ -264,18 +261,7 @@ public class TCPClient {
             // Hint: In Step 3 you need to handle only login-related responses.
             // Hint: In Step 3 reuse onLoginResult() method
             String response = this.waitServerResponse();
-            System.out.println(response);
-            switch(response) {
-                case "loginok":
-                    onMsgError("Logged in");
-                    break;
-                case "loginerr username already in use":
-                    onMsgError("Username already in use");
-                    break;
-                default:
-                    System.out.println("Response unrecognisable");
-            }
-
+            System.out.println("Server response: " + response);
             // TODO Step 5: update this method, handle user-list response from the server
             // Hint: In Step 5 reuse onUserList() method
 
