@@ -10,8 +10,9 @@ public class TCPClient {
     private BufferedReader fromServer;
     private Socket connection;
 
-    private static final String LOGIN_ERROR = "loginerr username already in use";
+    private static final String LOGIN_ERROR = "loginerr";
     private static final String LOGIN_SUCCESS = "loginok";
+    private static final String PUBLIC_MESSAGE = "msg";
 
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
@@ -169,7 +170,7 @@ public class TCPClient {
         try {
             serverResponse = this.fromServer.readLine();
         } catch (IOException e) {
-            // Close connection
+            this.disconnect();
             System.out.println("Error when waiting for server response: " + e.getMessage());
         }
         return serverResponse;
@@ -212,17 +213,25 @@ public class TCPClient {
             // Hint: In Step 3 you need to handle only login-related responses.
             // Hint: In Step 3 reuse onLoginResult() method
             String serverResponse = this.waitServerResponse();
-            switch (serverResponse) {
-                case LOGIN_SUCCESS:
-                    System.out.println("Login ok");
-                    this.onLoginResult(true, "");
-                    break;
-                case LOGIN_ERROR:
-                    System.out.println("Login error");
-                    this.onLoginResult(false, serverResponse);
-                    break;
-                default:
-                    System.out.println("Server response unrecognisable: " + serverResponse);
+            if (serverResponse != null) {
+                String[] responseArray = serverResponse.split(" ");
+                switch (responseArray[0]) {
+                    case LOGIN_SUCCESS:
+                        System.out.println("Login ok");
+                        this.onLoginResult(true, "");
+                        break;
+                    case LOGIN_ERROR:
+                        System.out.println("Login error");
+                        this.onLoginResult(false, serverResponse);
+                        break;
+                    case PUBLIC_MESSAGE:
+                        System.out.println("Message recieved from: " + responseArray[1]);
+                        String text = this.createTextFromServerResponse(responseArray);
+                        this.onMsgReceived(false, responseArray[1], text);
+                        break;
+                    default:
+                        System.out.println("Server response unrecognisable: " + serverResponse);
+                }
             }
 
             // TODO Step 5: update this method, handle user-list response from the server
@@ -236,6 +245,25 @@ public class TCPClient {
             // TODO Step 8: add support for incoming supported command list (type: supported)
 
         }
+    }
+
+    /**
+     * Creates a string that contains only the message that the user
+     * typed inn.
+     *
+     * @param responseArray the array of words that the server responded with
+     * @return String, returns a string containing only the message. All command words
+     * are removed.
+     */
+    private String createTextFromServerResponse(String[] responseArray) {
+        StringBuffer sb = new StringBuffer();
+        int index = 2;
+        while (index < responseArray.length) {
+            sb.append(responseArray[index]);
+            sb.append(" ");
+            index++;
+        }
+        return sb.toString();
     }
 
     /**
@@ -284,6 +312,9 @@ public class TCPClient {
     private void onDisconnect() {
         // TODO Step 4: Implement this method
         // Hint: all the onXXX() methods will be similar to onLoginResult()
+        for (ChatListener l : listeners) {
+            l.onDisconnect();
+        }
     }
 
     /**
@@ -304,6 +335,10 @@ public class TCPClient {
      */
     private void onMsgReceived(boolean priv, String sender, String text) {
         // TODO Step 7: Implement this method
+        TextMessage message = new TextMessage(sender, priv, text);
+        for (ChatListener l : listeners) {
+            l.onMessageReceived(message);
+        }
     }
 
     /**
