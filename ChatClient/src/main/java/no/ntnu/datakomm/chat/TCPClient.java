@@ -101,6 +101,9 @@ public class TCPClient {
     public void tryLogin(String username) {
         // TODO Step 3: implement this method
         // Hint: Reuse sendCommand() method
+        if (username.isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be empty");
+        }
         if (this.isConnectionActive()) {
             this.sendCommand("login " + username);
         }

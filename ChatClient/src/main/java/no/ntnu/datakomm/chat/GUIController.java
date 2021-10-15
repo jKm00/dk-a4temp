@@ -94,7 +94,11 @@ public class GUIController implements ChatListener {
         });
         loginBtn.setOnMouseClicked(event -> {
             // Mouse clicked on "Login" button
-            tcpClient.tryLogin(loginInput.getText());
+            try {
+                tcpClient.tryLogin(loginInput.getText());
+            } catch (IllegalArgumentException e) {
+                addMsgToGui(true, new TextMessage("err", false, e.getMessage()), true);
+            }
             loginInput.setText("");
         });
         textInput.setOnKeyPressed(event -> {
