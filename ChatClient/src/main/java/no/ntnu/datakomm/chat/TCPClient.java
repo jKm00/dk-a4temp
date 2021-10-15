@@ -263,6 +263,17 @@ public class TCPClient {
             // and act on it.
             // Hint: In Step 3 you need to handle only login-related responses.
             // Hint: In Step 3 reuse onLoginResult() method
+            String response = this.waitServerResponse();
+            switch(response) {
+                case "loginok":
+                    // Login ok
+                    break;
+                case "loginerr username already in use":
+                    // error
+                    break;
+                default:
+                    System.out.println("Response unrecognisable");
+            }
 
             // TODO Step 5: update this method, handle user-list response from the server
             // Hint: In Step 5 reuse onUserList() method
