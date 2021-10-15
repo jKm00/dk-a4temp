@@ -26,7 +26,16 @@ public class TCPClient {
         // TODO Step 1: implement this method
         // Hint: Remember to process all exceptions and return false on error
         // Hint: Remember to set up all the necessary input/output stream variables
-        return false;
+        boolean connected = false;
+        try {
+            this.connection = new Socket(host, port);
+            this.fromServer = new BufferedReader(new InputStreamReader(this.connection.getInputStream()));
+            this.toServer = new PrintWriter(this.connection.getOutputStream(), true);
+            connected = true;
+        } catch (IOException e) {
+            System.out.println("Something went wrong when establishing a socket: " + e.getMessage());;
+        }
+        return connected;
     }
 
     /**
