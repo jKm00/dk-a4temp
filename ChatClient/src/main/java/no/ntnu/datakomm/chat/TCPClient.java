@@ -266,10 +266,10 @@ public class TCPClient {
             String response = this.waitServerResponse();
             switch(response) {
                 case "loginok":
-                    // Login ok
+                    onMsgError("Logged in");
                     break;
                 case "loginerr username already in use":
-                    // error
+                    onMsgError("Username already in use");
                     break;
                 default:
                     System.out.println("Response unrecognisable");
