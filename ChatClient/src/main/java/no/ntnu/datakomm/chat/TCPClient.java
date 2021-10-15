@@ -119,7 +119,7 @@ public class TCPClient {
         // Hint: update lastError if you want to store the reason for the error.
 
         try {
-            sendCommand(message);
+            sendCommand("msg" + " " + message);
             return true;
         } catch (Exception e) {
             lastError = e.getMessage();
