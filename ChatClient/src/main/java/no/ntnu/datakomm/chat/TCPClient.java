@@ -10,6 +10,9 @@ public class TCPClient {
     private BufferedReader fromServer;
     private Socket connection;
 
+    private final static String loginok = "loginok";
+    private final static String userAlreadyInUse = "loginerr username already in use";
+
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
 
@@ -92,6 +95,24 @@ public class TCPClient {
     public void tryLogin(String username) {
         // TODO Step 3: implement this method
         // Hint: Reuse sendCommand() method
+
+        // Send command with username
+        if (this.sendCommand("login " + username)) {
+            try {
+                String response = fromServer.readLine();
+                if (response.equals(loginok)) {
+                    System.out.println("Logged in");
+                } else if (response.equals(userAlreadyInUse)) {
+                    System.out.println("Username is already in use");
+                }
+            } catch (IOException e) {
+                System.out.println("Error when reading from server: " + e.getMessage());
+            }
+        }
+        // Retrieve response from server
+        // Check response:
+            // login user if response is ok
+            // print out error if response it not ok
     }
 
     /**
