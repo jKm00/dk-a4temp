@@ -271,6 +271,7 @@ public class TCPClient {
             // Hint: In Step 3 you need to handle only login-related responses.
             // Hint: In Step 3 reuse onLoginResult() method
             String response = this.waitServerResponse();
+            System.out.println(response);
             switch(response) {
                 case "loginok":
                     onMsgError("Logged in");
