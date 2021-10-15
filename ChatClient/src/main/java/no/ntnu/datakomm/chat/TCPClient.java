@@ -33,6 +33,7 @@ public class TCPClient {
         // TODO Step 1: implement this method
         // Hint: Remember to process all exceptions and return false on error
         // Hint: Remember to set up all the necessary input/output stream variables
+
         boolean connected = false;
         try {
             this.connection = new Socket(host, port);
@@ -43,6 +44,7 @@ public class TCPClient {
             System.out.println("Something went wrong when establishing a socket: " + e.getMessage());;
         }
         return connected;
+
     }
 
     /**
@@ -85,7 +87,11 @@ public class TCPClient {
     private boolean sendCommand(String cmd) {
         // TODO Step 2: Implement this method
         // Hint: Remember to check if connection is active
-        return false;
+
+        if (connection == null) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -98,7 +104,15 @@ public class TCPClient {
         // TODO Step 2: implement this method
         // Hint: Reuse sendCommand() method
         // Hint: update lastError if you want to store the reason for the error.
-        return false;
+
+        try {
+            sendCommand(message);
+            return true;
+        } catch (Exception e) {
+            lastError = e.getMessage();
+            return false;
+        }
+
     }
 
     /**
@@ -122,6 +136,7 @@ public class TCPClient {
                 System.out.println("Error when reading from server: " + e.getMessage());
             }
         }
+
     }
 
     /**
