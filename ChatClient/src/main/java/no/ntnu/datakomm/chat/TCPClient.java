@@ -14,6 +14,9 @@ public class TCPClient {
     private Socket connection;
     private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
+    private final static String loginok = "loginok";
+    private final static String userAlreadyInUse = "loginerr username already in use";
+
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
 
@@ -30,7 +33,16 @@ public class TCPClient {
         // TODO Step 1: implement this method
         // Hint: Remember to process all exceptions and return false on error
         // Hint: Remember to set up all the necessary input/output stream variables
-        return false;
+        boolean connected = false;
+        try {
+            this.connection = new Socket(host, port);
+            this.fromServer = new BufferedReader(new InputStreamReader(this.connection.getInputStream()));
+            this.toServer = new PrintWriter(this.connection.getOutputStream(), true);
+            connected = true;
+        } catch (IOException e) {
+            System.out.println("Something went wrong when establishing a socket: " + e.getMessage());;
+        }
+        return connected;
     }
 
     /**
@@ -97,6 +109,19 @@ public class TCPClient {
     public void tryLogin(String username) {
         // TODO Step 3: implement this method
         // Hint: Reuse sendCommand() method
+        
+        if (this.sendCommand("login " + username)) {
+            try {
+                String response = fromServer.readLine();
+                if (response.equals(loginok)) {
+                    System.out.println("Logged in");
+                } else if (response.equals(userAlreadyInUse)) {
+                    System.out.println("Username is already in use");
+                }
+            } catch (IOException e) {
+                System.out.println("Error when reading from server: " + e.getMessage());
+            }
+        }
     }
 
     /**
