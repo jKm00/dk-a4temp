@@ -13,7 +13,6 @@ public class TCPClient {
     private BufferedReader fromServer;
     private Socket connection;
     private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-    private String username;
 
     private final static String loginok = "loginok";
     private final static String userAlreadyInUse = "loginerr username already in use";
@@ -68,7 +67,6 @@ public class TCPClient {
                 this.toServer=null;
                 this.connection.close();
                 this.connection=null;
-                this.username = null;
 
                 logger.log(Level.INFO, "Connection closed");
             } else {
@@ -121,7 +119,7 @@ public class TCPClient {
         // Hint: update lastError if you want to store the reason for the error.
 
         try {
-            sendCommand("msg " + this.username + " " + message);
+            sendCommand(message);
             return true;
         } catch (Exception e) {
             lastError = e.getMessage();
@@ -138,20 +136,20 @@ public class TCPClient {
     public void tryLogin(String username) {
         // TODO Step 3: implement this method
         // Hint: Reuse sendCommand() method
-
+        
         if (this.sendCommand("login " + username)) {
-            String response = this.waitServerResponse();
-            if (response != null) {
+            try {
+                String response = fromServer.readLine();
                 if (response.equals(loginok)) {
-                    this.username = username;
                     System.out.println("Logged in");
                 } else if (response.equals(userAlreadyInUse)) {
                     System.out.println("Username is already in use");
                 }
-            } else {
-                System.out.println("Something went wrong when reading from server");
+            } catch (IOException e) {
+                System.out.println("Error when reading from server: " + e.getMessage());
             }
         }
+
     }
 
     /**
@@ -161,12 +159,29 @@ public class TCPClient {
     public void refreshUserList() {
         // TODO Step 5: implement this method
 
-        
-
         // Hint: Use Wireshark and the provided chat client reference app to find out what commands the
         // client and server exchange for user listing.
-    }
 
+        if (this.sendCommand("users")) {
+            System.out.println("Refreshed user list");
+            try {
+                String response = fromServer.readLine();
+                if (response.equals("users")) {
+                    String userList = fromServer.readLine();
+                    
+                    for (userList.split(","); userList.length() > 0; userList.split(" ")) {
+                    System.out.println(userList);
+                }
+            }
+            }
+             catch (IOException e) {
+                System.out.println("Error when reading from server: " + e.getMessage());
+            }
+             }
+             else {
+                System.out.println("Error when sending command");
+        }
+    }
     /**
      * Send a private message to a single recipient.
      *
