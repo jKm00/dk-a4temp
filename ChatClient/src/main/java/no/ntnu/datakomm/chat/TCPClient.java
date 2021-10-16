@@ -14,7 +14,10 @@ public class TCPClient {
     private static final String LOGIN_ERROR = "loginerr";
     private static final String LOGIN_SUCCESS = "loginok";
     private static final String PUBLIC_MESSAGE = "msg";
+    private static final String PRIVATE_MESSAGE = "privmsg";
     private static final String USERS = "users";
+    private static final String MSGERROR = "msgerr";
+    private static final String CMDERROR = "cmderr";
 
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
@@ -236,10 +239,18 @@ public class TCPClient {
                         String text = this.createTextFromServerResponse(responseArray);
                         this.onMsgReceived(false, responseArray[1], text);
                         break;
+                    case PRIVATE_MESSAGE:
+                        String privMessage = this.createTextFromServerResponse(responseArray);
+                        this.onMsgReceived(true, responseArray[1], privMessage);
                     case USERS:
                         String[] users = Arrays.copyOfRange(responseArray,
                                 1, responseArray.length);
                         this.onUsersList(users);
+                    case MSGERROR:
+                        String msgError = this.createTextFromServerResponse(responseArray);
+                        this.onMsgError(msgError);
+                    case CMDERROR:
+                        // Implement this case
                     default:
                         System.out.println("Server response unrecognisable: " + serverResponse);
                 }
@@ -362,6 +373,9 @@ public class TCPClient {
      */
     private void onMsgError(String errMsg) {
         // TODO Step 7: Implement this method
+        for (ChatListener l : listeners) {
+            l.onMessageError(errMsg);
+        }
     }
 
     /**
