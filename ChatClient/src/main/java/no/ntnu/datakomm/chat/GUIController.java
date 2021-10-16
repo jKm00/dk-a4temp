@@ -2,6 +2,7 @@ package no.ntnu.datakomm.chat;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
@@ -76,7 +77,15 @@ public class GUIController implements ChatListener {
         portInput.setText("1300");
         textOutput.heightProperty().addListener((observable, oldValue, newValue)
                 -> outputScroll.setVvalue(1.0));
+        this.addPrivMsgLabel();
         setKeyAndClickListeners();
+    }
+
+    private void addPrivMsgLabel() {
+        HBox hbox = new HBox();
+        hbox.setAlignment(Pos.CENTER);
+        hbox.getChildren().add(new Label("Type /privmsg <user> to send a private message"));
+        this.textOutput.getChildren().add(hbox);
     }
 
     /**

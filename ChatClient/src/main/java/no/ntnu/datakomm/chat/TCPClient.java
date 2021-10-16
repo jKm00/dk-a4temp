@@ -2,6 +2,7 @@ package no.ntnu.datakomm.chat;
 
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ public class TCPClient {
     private static final String LOGIN_ERROR = "loginerr";
     private static final String LOGIN_SUCCESS = "loginok";
     private static final String PUBLIC_MESSAGE = "msg";
+    private static final String USERS = "users";
 
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
@@ -132,6 +134,7 @@ public class TCPClient {
         // TODO Step 5: implement this method
         // Hint: Use Wireshark and the provided chat client reference app to find out what commands the
         // client and server exchange for user listing.
+        this.sendCommand("users");
     }
 
     /**
@@ -145,7 +148,12 @@ public class TCPClient {
         // TODO Step 6: Implement this method
         // Hint: Reuse sendCommand() method
         // Hint: update lastError if you want to store the reason for the error.
-        return false;
+        boolean privateMsgSent = false;
+        String privateMsg = "privmsg " + recipient + " " + message;
+        if (this.sendCommand(privateMsg)) {
+            privateMsgSent = true;
+        }
+        return privateMsgSent;
     }
 
 
@@ -219,18 +227,19 @@ public class TCPClient {
                 String[] responseArray = serverResponse.split(" ");
                 switch (responseArray[0]) {
                     case LOGIN_SUCCESS:
-                        System.out.println("Login ok");
                         this.onLoginResult(true, "");
                         break;
                     case LOGIN_ERROR:
-                        System.out.println("Login error");
                         this.onLoginResult(false, serverResponse);
                         break;
                     case PUBLIC_MESSAGE:
-                        System.out.println("Message recieved from: " + responseArray[1]);
                         String text = this.createTextFromServerResponse(responseArray);
                         this.onMsgReceived(false, responseArray[1], text);
                         break;
+                    case USERS:
+                        String[] users = Arrays.copyOfRange(responseArray,
+                                1, responseArray.length);
+                        this.onUsersList(users);
                     default:
                         System.out.println("Server response unrecognisable: " + serverResponse);
                 }
@@ -326,6 +335,9 @@ public class TCPClient {
      */
     private void onUsersList(String[] users) {
         // TODO Step 5: Implement this method
+        for (ChatListener l : this.listeners) {
+            l.onUserList(users);
+        }
     }
 
     /**
