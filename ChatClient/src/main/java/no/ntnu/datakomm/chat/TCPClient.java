@@ -242,15 +242,19 @@ public class TCPClient {
                     case PRIVATE_MESSAGE:
                         String privMessage = this.createTextFromServerResponse(responseArray);
                         this.onMsgReceived(true, responseArray[1], privMessage);
+                        break;
                     case USERS:
                         String[] users = Arrays.copyOfRange(responseArray,
                                 1, responseArray.length);
                         this.onUsersList(users);
+                        break;
                     case MSGERROR:
                         String msgError = this.createTextFromServerResponse(responseArray);
                         this.onMsgError(msgError);
+                        break;
                     case CMDERROR:
                         // Implement this case
+                        break;
                     default:
                         System.out.println("Server response unrecognisable: " + serverResponse);
                 }
