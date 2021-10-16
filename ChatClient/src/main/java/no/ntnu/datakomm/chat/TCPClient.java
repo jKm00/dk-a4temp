@@ -62,6 +62,8 @@ public class TCPClient {
                 this.connection = null;
                 this.fromServer = null;
                 this.toServer = null;
+
+                this.onDisconnect();
             } catch (IOException e) {
                 System.out.println("Error when disconnectiong: " + e.getMessage());;
             }
@@ -171,7 +173,7 @@ public class TCPClient {
             serverResponse = this.fromServer.readLine();
         } catch (IOException e) {
             this.disconnect();
-            System.out.println("Error when waiting for server response: " + e.getMessage());
+            this.lastError = e.getMessage();
         }
         return serverResponse;
     }
