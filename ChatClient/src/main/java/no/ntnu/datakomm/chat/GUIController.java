@@ -407,7 +407,7 @@ public class GUIController implements ChatListener {
             StringBuilder listOfCommands = new StringBuilder(
                     "Commands available: ");
             for (String c : commands) {
-                listOfCommands.append(c).append(" ");
+                listOfCommands.append(c).append(", ");
             }
             listOfCommands.append(
                     "\nNB! These are chat protocol commands and won't work by just typing them");

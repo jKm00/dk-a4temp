@@ -18,6 +18,7 @@ public class TCPClient {
     private static final String USERS = "users";
     private static final String MSGERROR = "msgerr";
     private static final String CMDERROR = "cmderr";
+    private static final String SUPPORTED_CMD = "supported";
 
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
@@ -166,6 +167,7 @@ public class TCPClient {
     public void askSupportedCommands() {
         // TODO Step 8: Implement this method
         // Hint: Reuse sendCommand() method
+        this.sendCommand("help");
     }
 
 
@@ -256,6 +258,10 @@ public class TCPClient {
                     case CMDERROR:
                         String cmdError = this.createErrorMsg(responseArray);
                         this.onCmdError(cmdError);
+                        break;
+                    case SUPPORTED_CMD:
+                        this.onSupported(Arrays.copyOfRange(responseArray,
+                                1, responseArray.length));
                         break;
                     default:
                         System.out.println("Server response unrecognisable: " + serverResponse);
@@ -422,5 +428,8 @@ public class TCPClient {
      */
     private void onSupported(String[] commands) {
         // TODO Step 8: Implement this method
+        for (ChatListener l : listeners) {
+            l.onSupportedCommands(commands);
+        }
     }
 }
