@@ -226,6 +226,7 @@ public class TCPClient {
             // Hint: In Step 3 you need to handle only login-related responses.
             // Hint: In Step 3 reuse onLoginResult() method
             String serverResponse = this.waitServerResponse();
+            System.out.println("Server response: " + serverResponse);
             if (serverResponse != null) {
                 String[] responseArray = serverResponse.split(" ");
                 switch (responseArray[0]) {
@@ -249,11 +250,12 @@ public class TCPClient {
                         this.onUsersList(users);
                         break;
                     case MSGERROR:
-                        String msgError = this.createTextFromServerResponse(responseArray);
+                        String msgError = this.createErrorMsg(responseArray);
                         this.onMsgError(msgError);
                         break;
                     case CMDERROR:
-                        // Implement this case
+                        String cmdError = this.createErrorMsg(responseArray);
+                        this.onCmdError(cmdError);
                         break;
                     default:
                         System.out.println("Server response unrecognisable: " + serverResponse);
@@ -271,6 +273,24 @@ public class TCPClient {
             // TODO Step 8: add support for incoming supported command list (type: supported)
 
         }
+    }
+
+    /**
+     * Creates a string that only contains the error message received
+     * from the server.
+     *
+     * @param responseArray an array containing all the words received from the server.
+     * @return a string with the error message received from the server.
+     */
+    private String createErrorMsg(String[] responseArray) {
+        StringBuffer sb = new StringBuffer();
+        int index = 1;
+        while (index < responseArray.length) {
+            sb.append(responseArray[index]);
+            sb.append(" ");
+            index++;
+        }
+        return sb.toString();
     }
 
     /**
@@ -389,6 +409,9 @@ public class TCPClient {
      */
     private void onCmdError(String errMsg) {
         // TODO Step 7: Implement this method
+        for (ChatListener l : listeners) {
+            l.onCommandError(errMsg);
+        }
     }
 
     /**
