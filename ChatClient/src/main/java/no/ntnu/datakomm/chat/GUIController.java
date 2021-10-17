@@ -146,6 +146,8 @@ public class GUIController implements ChatListener {
                     String recipient = msgParts[1];
                     String message = msgParts[2];
                     tcpClient.sendPrivateMessage(recipient, message);
+                } else if (msgParts.length == 1 && (msgParts[0].equals("/joke\n") || msgParts[0].equals("/joke"))) {
+                    tcpClient.sendJokeRequest();
                 } else {
                     tcpClient.sendPublicMessage(msgToSend);
                 }
@@ -427,6 +429,14 @@ public class GUIController implements ChatListener {
         Platform.runLater(() -> {
             TextMessage msg = new TextMessage("err", false, "Error: " + errMsg);
             addMsgToGui(true, msg, true);
+        });
+    }
+
+    @Override
+    public void onJokeReceived(String joke) {
+        Platform.runLater(() -> {
+            TextMessage msg = new TextMessage("Server", true, joke);
+            addMsgToGui(false, msg, false);
         });
     }
 

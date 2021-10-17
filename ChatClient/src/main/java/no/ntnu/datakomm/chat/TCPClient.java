@@ -19,6 +19,7 @@ public class TCPClient {
     private static final String MSGERROR = "msgerr";
     private static final String CMDERROR = "cmderr";
     private static final String SUPPORTED_CMD = "supported";
+    private static final String JOKE = "joke";
 
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
@@ -163,6 +164,18 @@ public class TCPClient {
         return privateMsgSent;
     }
 
+    /**
+     * Sends a request to the server asking for a joke
+     *
+     * @return true if request sent, false otherwise
+     */
+    public boolean sendJokeRequest() {
+        boolean requestSent = false;
+        if (this.sendCommand("joke")) {
+            requestSent = true;
+        }
+        return requestSent;
+    }
 
     /**
      * Send a request for the list of commands that server supports.
@@ -272,6 +285,9 @@ public class TCPClient {
                         this.onSupported(Arrays.copyOfRange(responseArray,
                                 1, responseArray.length));
                         break;
+                    case JOKE:
+                        this.onJokeReceived(this.createJokeString(responseArray));
+                        break;
                     default:
                         System.out.println("Server response unrecognisable: " + serverResponse);
                 }
@@ -288,6 +304,24 @@ public class TCPClient {
             // TODO Step 8: add support for incoming supported command list (type: supported)
 
         }
+    }
+
+    /**
+     * Creates a string with the joke given from the server. Removes all the
+     * protocol commands that is not a part of the joke
+     *
+     * @param serverResponse a list of all the words from the server response
+     * @return a string with the joke given from the server.
+     */
+    private String createJokeString(String[] serverResponse) {
+        StringBuffer sb = new StringBuffer();
+        int index = 1;
+        while (index < serverResponse.length) {
+            sb.append(serverResponse[index]);
+            sb.append(" ");
+            index++;
+        }
+        return sb.toString();
     }
 
     /**
@@ -439,6 +473,17 @@ public class TCPClient {
         // TODO Step 8: Implement this method
         for (ChatListener l : listeners) {
             l.onSupportedCommands(commands);
+        }
+    }
+
+    /**
+     * Notify listeners that a joke response was received from the server.
+     *
+     * @param joke the joke received from the server
+     */
+    private void onJokeReceived(String joke) {
+        for (ChatListener l : listeners) {
+            l.onJokeReceived(joke);
         }
     }
 }

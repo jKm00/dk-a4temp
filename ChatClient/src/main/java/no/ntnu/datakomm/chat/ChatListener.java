@@ -60,4 +60,11 @@ public interface ChatListener {
      */
     public void onCommandError(String errMsg);
 
+    /**
+     * This method is called when a joke is received from the server
+     *
+     * @param joke the joke received from the server
+     */
+    public void onJokeReceived(String joke);
+
 }
