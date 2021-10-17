@@ -71,7 +71,7 @@ public class TCPClient {
 
                 this.onDisconnect();
             } catch (IOException e) {
-                System.out.println("Error when disconnectiong: " + e.getMessage());;
+                this.lastError = e.getMessage();
             }
         }
     }
@@ -110,8 +110,11 @@ public class TCPClient {
         // TODO Step 2: implement this method
         // Hint: Reuse sendCommand() method
         // Hint: update lastError if you want to store the reason for the error.
-        this.sendCommand("msg " + message);
-        return false;
+        boolean msgSent = false;
+        if (this.sendCommand("msg " + message)) {
+            msgSent = true;
+        }
+        return msgSent;
     }
 
     /**
@@ -227,10 +230,16 @@ public class TCPClient {
             // and act on it.
             // Hint: In Step 3 you need to handle only login-related responses.
             // Hint: In Step 3 reuse onLoginResult() method
+
+            // Retrieve server response
             String serverResponse = this.waitServerResponse();
-            System.out.println("Server response: " + serverResponse);
+
+            // Check that the server response is not empty
             if (serverResponse != null) {
+                // Split server response by space in to a string of words
                 String[] responseArray = serverResponse.split(" ");
+
+                // Check the first word
                 switch (responseArray[0]) {
                     case LOGIN_SUCCESS:
                         this.onLoginResult(true, "");
