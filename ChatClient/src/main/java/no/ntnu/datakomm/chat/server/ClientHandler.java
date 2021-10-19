@@ -39,9 +39,6 @@ public class ClientHandler extends Thread {
             if (clientRequest != null) {
                 String[] request = clientRequest.split(" ", 3);
                 switch (request[0]) {
-                    case "msg":
-                        //this.sendPublicMessage(request[1], request[2]);
-                        break;
                     case "users":
                         this.sendUserList();
                         break;
@@ -55,8 +52,17 @@ public class ClientHandler extends Thread {
                     case "privmsg":
                         this.sendPrivateMessage(request[1], request[2]);
                         break;
+                    case "msg":
+                        String message;
+                        if (request.length == 2) {
+                            message = request[1];
+                        } else {
+                            message = request[1] + " " + request[2];
+                        }
+                        this.sendPublicMessage(message);
+                        break;
                     default:
-                        this.sendCommand("err did not understand request <" + clientRequest + ">");
+                        this.sendCommand("Request not valid: " + clientRequest);
                 }
             }
         }
@@ -124,13 +130,15 @@ public class ClientHandler extends Thread {
         this.toClient.println(sb.toString());
     }
 
-    private void sendPublicMessage(String message1, String message2) {
+    private void sendPublicMessage(String message) {
         for (Client client : this.register.getClients().values()) {
-            try {
-                PrintWriter toClient = new PrintWriter(client.getClientSocket().getOutputStream(), true);
-                toClient.println("msg " + this.client.getUsername() + " " + message1 + " " + message2);
-            } catch (IOException e) {
-                this.lastError = e.getMessage();
+            if (this.client != client) {
+                try {
+                    PrintWriter toClient = new PrintWriter(client.getClientSocket().getOutputStream(), true);
+                    toClient.println("msg " + this.client.getUsername() + " " + message);
+                } catch (IOException e) {
+                    this.lastError = e.getMessage();
+                }
             }
         }
     }
