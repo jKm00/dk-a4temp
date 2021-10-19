@@ -246,7 +246,6 @@ public class TCPClient {
 
             // Retrieve server response
             String serverResponse = this.waitServerResponse();
-            System.out.println("Server response: " + serverResponse);
 
             // Check that the server response is not empty
             if (serverResponse != null) {

@@ -56,7 +56,7 @@ public class ClientHandler extends Thread {
                         this.sendPrivateMessage(request[1], request[2]);
                         break;
                     default:
-                        System.out.println("Request unrecognisable: " + request[0]);
+                        this.sendCommand("err did not understand request <" + clientRequest + ">");
                 }
             }
         }
