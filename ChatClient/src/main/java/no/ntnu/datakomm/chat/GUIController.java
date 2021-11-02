@@ -136,6 +136,15 @@ public class GUIController implements ChatListener {
      */
     private void inputSubmit() {
         String msgToSend = textInput.getText();
+        String lastFourCharacters;
+        if (msgToSend.length() > 2) {
+            lastFourCharacters = msgToSend.substring(msgToSend.length() - 1);
+        } else {
+            lastFourCharacters = msgToSend;
+        }
+        if (lastFourCharacters.equals("\n")) {
+            msgToSend = msgToSend.substring(0, msgToSend.length() - 1);
+        }
         if (!msgToSend.isEmpty()) {
             TextMessage msg;
             if (tcpClient.isConnectionActive()) {
