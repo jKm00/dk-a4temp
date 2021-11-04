@@ -1,21 +1,27 @@
 package no.ntnu.datakomm.chat;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.*;
-import java.util.IllformedLocaleException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+// ppop
 public class TCPClient {
     private PrintWriter toServer;
     private BufferedReader fromServer;
     private Socket connection;
     private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    private final static String loginok = "loginok";
-    private final static String userAlreadyInUse = "loginerr username already in use";
+    private final static String LOGINOK = "loginok";
+    private final static String LOGINERR = "loginerr";
+    private final static String USERS = "users";
+    private final static String RCVPRIV_MSG = "privmsg";
+    private final static String RCVPBLC_MSG = "msg";
+    private final static String SUCCESS_MSG = "msgok";
+    private final static String ERROR_MSG = "msgerr";
+    private final static String ERROR_CMD = "cmderr";
+    private final static String HELP = "supported";
 
     // Hint: if you want to store a message for the last error, store it here
     private String lastError = null;
@@ -390,7 +396,10 @@ public class TCPClient {
      * @param users List with usernames
      */
     private void onUsersList(String[] users) {
-        // TODO Step 5: Implement this method
+        // TODO Step 5: Implement this method DONE!
+        for (ChatListener l : listeners){
+            l.onUserList(users);
+        }
     }
 
     /**
@@ -401,7 +410,10 @@ public class TCPClient {
      * @param text   Message text
      */
     private void onMsgReceived(boolean priv, String sender, String text) {
-        // TODO Step 7: Implement this method
+        // TODO Step 7: Implement this method DONE!
+        for (ChatListener l : listeners){
+            l.onMessageReceived(new TextMessage(sender, priv, text));
+        }
     }
 
     /**
@@ -410,7 +422,10 @@ public class TCPClient {
      * @param errMsg Error description returned by the server
      */
     private void onMsgError(String errMsg) {
-        // TODO Step 7: Implement this method
+        // TODO Step 7: Implement this method DONE!
+        for (ChatListener l : listeners){
+            l.onMessageError(errMsg);
+        }
     }
 
     /**
@@ -419,7 +434,10 @@ public class TCPClient {
      * @param errMsg Error message
      */
     private void onCmdError(String errMsg) {
-        // TODO Step 7: Implement this method
+        // TODO Step 7: Implement this method DONE!
+        for (ChatListener l : listeners){
+            l.onCommandError(errMsg);
+        }
     }
 
     /**
@@ -430,5 +448,8 @@ public class TCPClient {
      */
     private void onSupported(String[] commands) {
         // TODO Step 8: Implement this method
+        for (ChatListener l : listeners){
+            l.onSupportedCommands(commands);
+        }
     }
 }
