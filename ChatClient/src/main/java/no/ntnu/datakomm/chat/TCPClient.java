@@ -145,10 +145,17 @@ public class TCPClient {
      * @return true if message sent, false on error
      */
     public boolean sendPrivateMessage(String recipient, String message) {
-        // TODO Step 6: Implement this method
+        // TODO Step 6: Implement this method DONE!
         // Hint: Reuse sendCommand() method
         // Hint: update lastError if you want to store the reason for the error.
-        return false;
+        try {
+            sendCommand("privmsg " + recipient + " " + message);
+            return true;
+        }
+        catch (Exception e) {
+            lastError = e.getMessage();
+            return false;
+        }
     }
 
 
@@ -156,8 +163,9 @@ public class TCPClient {
      * Send a request for the list of commands that server supports.
      */
     public void askSupportedCommands() {
-        // TODO Step 8: Implement this method
+        // TODO Step 8: Implement this method DONE!
         // Hint: Reuse sendCommand() method
+        sendCommand("help");
     }
 
 
