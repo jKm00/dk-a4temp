@@ -57,30 +57,28 @@ public class TCPClient {
      * that no two threads call this method in parallel.
      */
     public synchronized void disconnect() {
+        // TODO: step 4 DONE!
         // Keyword synchronized to make sure no two threads call this method in parallel.
         // If one thread is executing a synchronized method for an object, all other threads that invoke synchronized
         // methods for the same object block until the first thread is done with the object.
-        try {
-            if(connection.isConnected()) // checks if the connection socket is connected (active), if so disconnect socket.
-            {
-                this.fromServer=null;
+        if(isConnectionActive()){ // checks if the connection is active
+            try {
                 this.toServer=null;
+                this.fromServer=null;
                 this.connection.close();
                 this.connection=null;
-
-                logger.log(Level.INFO, "Connection closed");
-            } else {
-                throw new IllegalArgumentException("Socket is not connected"); // throws IllegalArgumentException if socket is not connected.
+                onDisconnect();
+            } catch (IOException e) {
+                this.logger.log(Level.WARNING, "Error while disconnecting: " + e.getMessage());
             }
-        } catch (IOException e)
-        {logger.log(Level.INFO, e.getMessage());}
+        }
     }
 
     /**
      * @return true if the connection is active (opened), false if not.
      */
     public boolean isConnectionActive() {
-        return connection != null;
+        return this.connection != null;
     }
 
     /**
