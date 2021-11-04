@@ -120,22 +120,11 @@ public class TCPClient {
      * @param username Username to use
      */
     public void tryLogin(String username) {
-        // TODO Step 3: implement this method
+        // TODO Step 3: implement this method DONE!
         // Hint: Reuse sendCommand() method
-        
-        if (this.sendCommand("login " + username)) {
-            try {
-                String response = fromServer.readLine();
-                if (response.equals(loginok)) {
-                    System.out.println("Logged in");
-                } else if (response.equals(userAlreadyInUse)) {
-                    System.out.println("Username is already in use");
-                }
-            } catch (IOException e) {
-                System.out.println("Error when reading from server: " + e.getMessage());
-            }
+        if(this.isConnectionActive()){
+            sendCommand("login" + " " + username);
         }
-
     }
 
     /**
@@ -143,30 +132,10 @@ public class TCPClient {
      * clear your current user list and use events in the listener.
      */
     public void refreshUserList() {
-        // TODO Step 5: implement this method
-
+        // TODO Step 5: implement this method DONE!
         // Hint: Use Wireshark and the provided chat client reference app to find out what commands the
         // client and server exchange for user listing.
-
-        if (this.sendCommand("users")) {
-            System.out.println("Refreshed user list");
-            try {
-                String response = fromServer.readLine();
-                if (response.equals("users")) {
-                    String userList = fromServer.readLine();
-                    
-                    for (userList.split(","); userList.length() > 0; userList.split(" ")) {
-                    System.out.println(userList);
-                }
-            }
-            }
-             catch (IOException e) {
-                System.out.println("Error when reading from server: " + e.getMessage());
-            }
-             }
-             else {
-                System.out.println("Error when sending command");
-        }
+        sendCommand("users");
     }
     /**
      * Send a private message to a single recipient.
@@ -198,19 +167,17 @@ public class TCPClient {
      * @return one line of text (one command) received from the server
      */
     private String waitServerResponse() {
-        // TODO Step 3: Implement this method
-        // TODO Step 4: If you get I/O Exception or null from the stream, it means that something has gone wrong
+        // TODO Step 3: Implement this method DONE!
+        // TODO Step 4: If you get I/O Exception or null from the stream, it means that something has gone wrong DONE!
         // with the stream and hence the socket. Probably a good idea to close the socket in that case.
-
-        String response = null;
+        String response=null;
         try {
-            response = fromServer.readLine();
+            response = this.fromServer.readLine();
         } catch (IOException e) {
-            System.out.println("Error when reading from server: " + e.getMessage());
-            disconnect();
+            this.logger.log(Level.WARNING, "Error while waiting for server response: " + e.getMessage());
+            disconnect(); // Disconnects if something wrong happens when waiting for response
         }
         return response;
-
     }
 
     /**
@@ -243,36 +210,119 @@ public class TCPClient {
      */
     private void parseIncomingCommands() {
         while (isConnectionActive()) {
-            // TODO Step 3: Implement this method
+            // TODO Step 3: Implement this method DONE!
             // Hint: Reuse waitServerResponse() method
             // Hint: Have a switch-case (or other way) to check what type of response is received from the server
             // and act on it.
             // Hint: In Step 3 you need to handle only login-related responses.
             // Hint: In Step 3 reuse onLoginResult() method
-            String response = this.waitServerResponse();
-            System.out.println(response);
-            switch(response) {
-                case "loginok":
-                    onMsgError("Logged in");
+            String response = waitServerResponse();
+            String[] responseList = response.split(" ");
+            String responseCmd = responseList[0];
+
+            String userMessage = createMessage(responseList);
+            String errorMessage = createErrorMsg(responseList);
+
+            switch(responseCmd){
+                case LOGINOK: onLoginResult(true, "");
                     break;
-                case "loginerr username already in use":
-                    onMsgError("Username already in use");
+
+                case LOGINERR: onLoginResult(false, "Username is already in use...");
                     break;
+
+                // TODO Step 5: update this method, handle user-list response from the server DONE!
+                // Hint: In Step 5 reuse onUserList() method
+
+                case USERS: ;
+                    onUsersList(createContentList(responseList));
+                    break;
+
+                // TODO Step 7: add support for incoming chat messages from other users (types: msg, privmsg) DONE!
+                case RCVPRIV_MSG:
+                    onMsgReceived(true, responseList[1], userMessage);
+                    break;
+
+                case RCVPBLC_MSG:
+                    onMsgReceived(false, responseList[1], userMessage);
+                    break;
+
+                case SUCCESS_MSG:
+                    this.logger.log(Level.INFO, "Message sent successfully");
+                    break;
+
+                // TODO Step 7: add support for incoming message errors (type: msgerr) DONE!
+                case ERROR_MSG:
+                    onMsgError(errorMessage);
+                    this.lastError = errorMessage;
+                    break;
+
+                // TODO Step 7: add support for incoming command errors (type: cmderr) DONE!
+                case ERROR_CMD:
+                    onCmdError(errorMessage);
+                    this.lastError = errorMessage;
+                    break;
+
+                // TODO Step 8: add support for incoming supported command list (type: supported) DONE!
+                case HELP:
+                    onSupported(createContentList(responseList));
+                    break;
+
                 default:
-                    System.out.println("Response unrecognisable");
+                    System.out.println("Unrecognized msg..");
+                //TODO: handle response=null
             }
-
-            // TODO Step 5: update this method, handle user-list response from the server
-            // Hint: In Step 5 reuse onUserList() method
-
-            // TODO Step 7: add support for incoming chat messages from other users (types: msg, privmsg)
-            // TODO Step 7: add support for incoming message errors (type: msgerr)
-            // TODO Step 7: add support for incoming command errors (type: cmderr)
-            // Hint for Step 7: call corresponding onXXX() methods which will notify all the listeners
-
-            // TODO Step 8: add support for incoming supported command list (type: supported)
-
         }
+    }
+
+    /**
+     * Takes the third index in the responselist (usually the message to be sent)
+     * @param responseList a list created of the response
+     * returns the message as a String
+     * @return the message as a String
+     */
+    public String createMessage(String[] responseList){
+        String message="";
+        int i=2;
+        while(i<responseList.length){
+            message = message + " " + responseList[i];
+            i++;
+        }
+        return message;
+    }
+
+    /**
+     * Takes all indexes except the first one (protocol command) and creates a new string with only Content.
+     * The new string is then split into a list (userList)
+     * @param responseList list of users
+     * returns a list of only users
+     * @return a list of only users
+     */
+    public String[] createContentList(String[] responseList){
+        ArrayList<String> content = new ArrayList<>();
+        String contentString = "";
+        int i=1;
+        while(i<responseList.length){
+            contentString += ";" + responseList[i];
+            i++;
+        }
+        String[] contentList = contentString.split(";");
+        return contentList;
+    }
+
+    /**
+     * Creates an error message from the responseList
+     * @param responseList List to be converted to error message
+     * returns error message
+     * @return error message
+     */
+    public String createErrorMsg(String[] responseList){
+        String errorMsg = "";
+        int i = 1;
+        while(i<responseList.length){
+            errorMsg = errorMsg + " " + responseList[i];
+            i++;
+        }
+        return errorMsg;
     }
 
     /**
