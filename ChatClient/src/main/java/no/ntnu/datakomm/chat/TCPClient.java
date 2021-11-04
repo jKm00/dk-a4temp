@@ -86,21 +86,14 @@ public class TCPClient {
      * @return true on success, false otherwise
      */
     private boolean sendCommand(String cmd) {
-        // TODO Step 2: Implement this method
+        // TODO Step 2: Implement this method DONE!
         // Hint: Remember to check if connection is active
-
-        if (connection == null) {
-            return false;
+        boolean success=false;
+        if(isConnectionActive()){ // Checks if the connection is active
+            this.toServer.println(cmd); // Sends cmd to server
+            success=true;
         }
-
-        try {
-            toServer.println(cmd);
-            return true;
-        } catch (Exception e) {
-            System.out.println("Something went wrong when sending a command: " + e.getMessage());
-            return false;
-        }
-        
+        return success;
     }
 
     /**
@@ -110,18 +103,15 @@ public class TCPClient {
      * @return true if message sent, false on error
      */
     public boolean sendPublicMessage(String message) {
-        // TODO Step 2: implement this method
+        // TODO Step 2: implement this method DONE!
         // Hint: Reuse sendCommand() method
         // Hint: update lastError if you want to store the reason for the error.
-
-        try {
-            sendCommand("msg" + " " + message);
+        if(sendCommand("msg"+" "+message)){ // Uses sendCommand method to check if the message was sent successfully, if so return true
             return true;
-        } catch (Exception e) {
-            lastError = e.getMessage();
+        } else {
+            this.logger.log(Level.WARNING, "Error sending public message");
             return false;
         }
-
     }
 
     /**
