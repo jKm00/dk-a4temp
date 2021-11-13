@@ -99,7 +99,7 @@ public class TcpClientTest {
      *
      * @throws InterruptedException When test is interrupted while sleeping
      */
-    @Test
+    /*@Test
     public void testPublicMessages() throws InterruptedException {
         // Create three clients. When one sends a message others should receive
         TCPClient c1 = new TCPClient();
@@ -135,14 +135,14 @@ public class TcpClientTest {
         c1.disconnect();
         c2.disconnect();
         c3.disconnect();
-    }
+    }*/
 
     /**
      * Test if sending private messages works.
      *
      * @throws InterruptedException When test is interrupted while sleeping
      */
-    @Test
+    /*@Test
     public void testPrivateMessages() throws InterruptedException {
         // Create three clients. One sends message to another. Third one should not receive.
         TCPClient c1 = new TCPClient();
@@ -203,7 +203,7 @@ public class TcpClientTest {
         c1.disconnect();
         c2.disconnect();
         c3.disconnect();
-    }
+    }*/
 
     /**
      * Try to close a connection that was never opened. There should be no exception.
